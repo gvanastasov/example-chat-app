@@ -1,30 +1,70 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="chat-container">
+    <div v-for="(message, index) in messages" :key="index" class="message">
+      <strong>{{ message.user }}:</strong> {{ message.text }}
+    </div>
+    <form @submit.prevent="sendMessage">
+      <input v-model="newMessage" placeholder="Type a message..." />
+      <button type="submit">Send</button>
+    </form>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { io } from 'socket.io-client';
+
+export default {
+  setup() {
+    const socket = ref(null); // Reference for the socket instance
+    const messages = ref([]); // Reactive array to store messages
+    const newMessage = ref(''); // Reactive variable for the input field
+
+    // Function to send a new message
+    const sendMessage = () => {
+      if (newMessage.value.trim()) {
+        const message = { user: 'User', text: newMessage.value };
+        socket.value.emit('chat_message', message); // Emit the message to the server
+        newMessage.value = ''; // Clear the input field
+      }
+    };
+
+    // Lifecycle hook: Set up the WebSocket connection
+    onMounted(() => {
+      socket.value = io('http://localhost:5173', {
+        path: '/ws',
+      }); // Connect to the WebSocket server
+
+      // Listen for incoming messages from the server
+      socket.value.on('chat_message', (message) => {
+        messages.value.push(message); // Add the message to the array
+      });
+    });
+
+    // Lifecycle hook: Clean up the WebSocket connection on unmount
+    onUnmounted(() => {
+      if (socket.value) {
+        socket.value.disconnect();
+      }
+    });
+
+    return {
+      messages, // Expose the messages array
+      newMessage, // Expose the input field model
+      sendMessage, // Expose the sendMessage function
+    };
+  },
+};
+</script>
+
+<style>
+.chat-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+.message {
+  margin-bottom: 10px;
 }
 </style>
