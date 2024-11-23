@@ -1,94 +1,78 @@
 <template>
-  <b-container class="my-4">
-    <b-card class="chat-container">
-      <b-card-header class="bg-primary text-white">
-        <h4 class="mb-0">Chat Room</h4>
-      </b-card-header>
-      <b-card-body>
-        <div class="messages mb-3">
-          <b-list-group>
-            <b-list-group-item
-              v-for="(message, index) in messages"
-              :key="index"
-              class="d-flex justify-content-between align-items-start"
-            >
-              <div>
-                <strong>{{ message.user }}</strong>: {{ message.text }}
-              </div>
-            </b-list-group-item>
-          </b-list-group>
-        </div>
-        <b-form @submit.prevent="sendMessage">
-          <b-form-group>
-            <b-input-group>
-              <b-form-input
-                v-model="newMessage"
-                placeholder="Type your message..."
-              />
-              <b-button type="submit" variant="primary">Send</b-button>
-            </b-input-group>
-          </b-form-group>
-        </b-form>
-      </b-card-body>
-    </b-card>
-  </b-container>
+  <div class="app-container d-flex">
+    <!-- Sidebar -->
+    <aside class="sidebar bg-light border-end">
+      <div class="logo p-3 text-center bg-danger text-white mb-3">
+        <h3>ChatApp</h3>
+      </div>
+      <div class="chat-list px-3">
+        <b-button variant="outline-danger" class="w-100 mb-2" @click="createChat">
+            Create Chat
+        </b-button>
+        <b-list-group>
+          <router-link
+            v-for="chat in chats"
+            :key="chat.id"
+            :to="{ name: 'Chatroom', params: { id: chat.id } }"
+            class="list-group-item list-group-item-action"
+          >
+            {{ chat.name }}
+          </router-link>
+        </b-list-group>
+      </div>
+      <b-button class="mt-auto w-auto mb-2 mx-2" @click="createChat">
+        Logout
+      </b-button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <c-page>
+      <router-view />
+    </c-page>
+  </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { io } from 'socket.io-client';
+import { ref } from 'vue';
+import CPage from './components/CPage.vue';
 
 export default {
+  components: { CPage },
   setup() {
-    const socket = ref(null); // Reference for the socket instance
-    const messages = ref([]); // Reactive array to store messages
-    const newMessage = ref(''); // Reactive variable for the input field
+    const chats = ref([
+      { id: 1, name: 'General' },
+      { id: 2, name: 'Tech' },
+      { id: 3, name: 'Random' },
+    ]);
+    const selectedChatId = ref(null);
 
-    // Function to send a new message
-    const sendMessage = () => {
-      if (newMessage.value.trim()) {
-        const message = { user: 'User', text: newMessage.value };
-        socket.value.emit('chat_message', message); // Emit the message to the server
-        newMessage.value = ''; // Clear the input field
-      }
+    const login = () => alert('Login functionality coming soon!');
+    const logout = () => alert('Logout functionality coming soon!');
+    const createChat = () => alert('Create Chat functionality coming soon!');
+    const selectChat = (id) => {
+      selectedChatId.value = id;
     };
 
-    // Lifecycle hook: Set up the WebSocket connection
-    onMounted(() => {
-      socket.value = io('http://localhost:5173', {
-        path: '/ws',
-      }); // Connect to the WebSocket server
-
-      // Listen for incoming messages from the server
-      socket.value.on('chat_message', (message) => {
-        messages.value.push(message); // Add the message to the array
-      });
-    });
-
-    // Lifecycle hook: Clean up the WebSocket connection on unmount
-    onUnmounted(() => {
-      if (socket.value) {
-        socket.value.disconnect();
-      }
-    });
-
     return {
-      messages, // Expose the messages array
-      newMessage, // Expose the input field model
-      sendMessage, // Expose the sendMessage function
+      chats,
+      selectedChatId,
+      login,
+      logout,
+      createChat,
+      selectChat,
     };
   },
 };
 </script>
 
 <style>
-.chat-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
+.app-container {
+  height: 100vh;
 }
-.message {
-  margin-bottom: 10px;
+.sidebar {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 </style>
