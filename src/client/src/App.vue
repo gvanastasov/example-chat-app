@@ -1,13 +1,37 @@
 <template>
-  <div class="chat-container">
-    <div v-for="(message, index) in messages" :key="index" class="message">
-      <strong>{{ message.user }}:</strong> {{ message.text }}
-    </div>
-    <form @submit.prevent="sendMessage">
-      <input v-model="newMessage" placeholder="Type a message..." />
-      <button type="submit">Send</button>
-    </form>
-  </div>
+  <b-container class="my-4">
+    <b-card class="chat-container">
+      <b-card-header class="bg-primary text-white">
+        <h4 class="mb-0">Chat Room</h4>
+      </b-card-header>
+      <b-card-body>
+        <div class="messages mb-3">
+          <b-list-group>
+            <b-list-group-item
+              v-for="(message, index) in messages"
+              :key="index"
+              class="d-flex justify-content-between align-items-start"
+            >
+              <div>
+                <strong>{{ message.user }}</strong>: {{ message.text }}
+              </div>
+            </b-list-group-item>
+          </b-list-group>
+        </div>
+        <b-form @submit.prevent="sendMessage">
+          <b-form-group>
+            <b-input-group>
+              <b-form-input
+                v-model="newMessage"
+                placeholder="Type your message..."
+              />
+              <b-button type="submit" variant="primary">Send</b-button>
+            </b-input-group>
+          </b-form-group>
+        </b-form>
+      </b-card-body>
+    </b-card>
+  </b-container>
 </template>
 
 <script>
