@@ -32,8 +32,8 @@
   
       const handleLogin = () => {
         if (username.value.trim()) {
-          userStore.login(username.value); // Call the fake login
-          router.push('/chat/1'); // Redirect to the first chat room
+          userStore.login(username.value);
+          router.push('/chat');
         } else {
           alert('Please enter a username!');
         }

@@ -1,77 +1,67 @@
 <template>
   <div class="chatroom d-flex flex-column h-100">
-    <!-- Chat Messages -->
-    <div class="messages flex-grow-1 overflow-auto p-3 bg-light border">
-      <div
-        v-for="(message, index) in messages"
-        :key="index"
-        class="message mb-2"
-      >
-        <strong>{{ message.user }}:</strong> {{ message.text }}
-      </div>
+    <div v-if="!currentChat" class="d-flex justify-content-center align-items-center flex-grow-1">
+      <p class="text-muted">You’re currently not in any chatroom.<br/> Select or create one to start chatting.</p>
     </div>
-
-    <!-- Message Input -->
-    <form @submit.prevent="sendMessage" class="d-flex p-3 border-top">
-      <b-form-input
-        v-model="newMessage"
-        placeholder="Type your message..."
-        class="flex-grow-1 me-2"
-      />
-      <b-button type="submit" variant="primary">Send</b-button>
-    </form>
+    <template v-else>
+      <!-- Chat Messages -->
+      <div class="messages flex-grow-1 overflow-auto p-3 bg-light border">
+        <div
+          v-for="(message, index) in chatMessages"
+          :key="index"
+          class="message mb-2"
+        >
+          <strong>{{ message.user }}:</strong> {{ message.text }}
+        </div>
+      </div>
+  
+      <!-- Message Input -->
+      <form @submit.prevent="sendMessage" class="d-flex p-3 border-top">
+        <b-form-input
+          v-model="newMessage"
+          placeholder="Type your message..."
+          class="flex-grow-1 me-2"
+        />
+        <b-button type="submit" variant="primary">Send</b-button>
+      </form>
+    </template>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { io } from 'socket.io-client';
-import { useUserStore } from '../stores/user'; // Import the user store
+import { useChatStore } from '../stores/chatStore';
 
 export default {
   setup() {
-    // Access the current route and chat ID
     const route = useRoute();
-    const chatId = route.params.id;
+    const chatStore = useChatStore();
 
-    // Access the user store
-    const userStore = useUserStore();
-    const user = userStore.user; // Get the current user from Pinia store
-
-    const socket = ref(null);
-    const messages = ref([]);
     const newMessage = ref('');
 
-    // Send message function
+    const chatId = computed(() => route.params.id);
+    const chatMessages = computed(() => chatStore.messages[chatId] || []);
+
+    watch(chatId, (id) => {
+      if (id) {
+        chatStore.joinChat(id);
+      }
+    });
+
     const sendMessage = () => {
       if (newMessage.value.trim()) {
-        // Send the message with the current user's name
-        const message = { user: user ? user.name : 'Anonymous', text: newMessage.value, chatId };
-        socket.value.emit('chat_message', message);
+        chatStore.sendMessage(chatId, newMessage.value);
         newMessage.value = '';
       }
     };
 
-    // Set up socket connection when component is mounted
-    onMounted(() => {
-      socket.value = io('http://localhost:5173', {
-        path: '/ws',
-      });
-
-      socket.value.on('chat_message', (message) => {
-        if (message.chatId === chatId) {
-          messages.value.push(message);
-        }
-      });
-    });
-
-    // Clean up the socket connection when the component is unmounted
-    onUnmounted(() => {
-      if (socket.value) socket.value.disconnect();
-    });
-
-    return { messages, newMessage, sendMessage };
+    return {
+      currentChat: chatId.value,
+      chatMessages,
+      newMessage,
+      sendMessage,
+    };
   },
 };
 </script>

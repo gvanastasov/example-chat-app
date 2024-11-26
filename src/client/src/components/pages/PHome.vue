@@ -10,19 +10,16 @@
             Create Chat
         </b-button>
         <b-list-group>
-          <router-link
+          <li
             v-for="chat in chats"
             :key="chat.id"
-            :to="{ name: 'Chatroom', params: { id: chat.id } }"
-            class="list-group-item list-group-item-action"
+            class="list-group-item"
+            @click="selectChat(chat.id)"
           >
             {{ chat.name }}
-          </router-link>
+          </li>
         </b-list-group>
       </div>
-      <b-button class="mt-auto w-auto mb-2 mx-2" @click="createChat">
-        Logout
-      </b-button>
     </aside>
 
     <!-- Main Content Area -->
@@ -33,31 +30,40 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
+
+import { useChatStore } from '../../stores/chatStore';
+
 import CPage from '../CPage.vue';
 
 export default {
   components: { CPage },
   setup() {
-    const chats = ref([
-      { id: 1, name: 'General' },
-      { id: 2, name: 'Tech' },
-      { id: 3, name: 'Random' },
-    ]);
-    const selectedChatId = ref(null);
-
-    const login = () => alert('Login functionality coming soon!');
-    const logout = () => alert('Logout functionality coming soon!');
-    const createChat = () => alert('Create Chat functionality coming soon!');
-    const selectChat = (id) => {
-      selectedChatId.value = id;
+    const chatStore = useChatStore();
+    
+    const createChat = () => {
+      // todo: use popup from bootstrap-vue
+      const name = prompt('Enter chat name:');
+      if (name) {
+        chatStore.createChat(name);
+      }
     };
 
+    const selectChat = (id) => {
+      router.push(`/chat/${id}`);
+      chatStore.joinChat(id);
+    };
+
+    onMounted(() => {
+      chatStore.connectSocket();
+    });
+
+    onUnmounted(() => {
+      chatStore.disconnectSocket();
+    });
+
     return {
-      chats,
-      selectedChatId,
-      login,
-      logout,
+      chats: chatStore.chats,
       createChat,
       selectChat,
     };

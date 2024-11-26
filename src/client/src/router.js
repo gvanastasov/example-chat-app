@@ -18,7 +18,7 @@ const routes = [
       component: PHome,
       children: [
         {
-            path: 'chat/:id',
+            path: 'chat/:id?',
             name: 'Chatroom',
             component: SChatroom,
             props: true,
