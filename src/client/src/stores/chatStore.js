@@ -33,8 +33,14 @@ export const useChatStore = defineStore('chatStore', () => {
     [socketMessageTypes.in.CHAT_JOIN_SUCCESS]: (_io, _socket, { id, name, history }) => {
       messages.value[currentChat.value] = history;
       currentChat.value = id;
-      chats.value.push({ id, name });
-      router.push({ name: 'Chatroom', params: { id: currentChat.value } });
+
+      if (!chats.value.find((chat) => chat.id === id)) {
+        chats.value.push({ id, name });
+      }
+
+      if (router.currentRoute.value.name !== 'Chatroom' || router.currentRoute.value.params.id !== id) {
+        router.push({ name: 'Chatroom', params: { id } });
+      }
     }
   }
 
