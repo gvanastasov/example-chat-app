@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia';
 import { io } from 'socket.io-client';
 import { ref, computed } from 'vue';
+
 import { useUserStore } from './user';
+import { router } from '../router';
 
 const socketMessageTypes = {
   out: {
@@ -10,6 +12,7 @@ const socketMessageTypes = {
   },
   in: {
       CHAT_CREATE_ACK: 'chat:create:ack',
+      CHAT_JOIN_SUCCESS: 'chat:join:success',
   }
 };
 
@@ -24,9 +27,15 @@ export const useChatStore = defineStore('chatStore', () => {
   const user = computed(() => userStore.user);
 
   const handlers = {
-    [socketMessageTypes.in.CHAT_CREATE_ACK]: (io, socket, data) => {
-      console.log('Chat created:', data);
+    [socketMessageTypes.in.CHAT_CREATE_ACK]: (_io, _socket, data) => {
+      joinChat(data.id);
     },
+    [socketMessageTypes.in.CHAT_JOIN_SUCCESS]: (_io, _socket, { id, name, history }) => {
+      messages.value[currentChat.value] = history;
+      currentChat.value = id;
+      chats.value.push({ id, name });
+      router.push({ name: 'Chatroom', params: { id: currentChat.value } });
+    }
   }
 
   const connectSocket = () => {
@@ -38,7 +47,7 @@ export const useChatStore = defineStore('chatStore', () => {
 
       socket.value.on('message', (msg) => {
         try {
-          const { type, data } = JSON.parse(msg);
+          const { type, data } = msg;
           const handler = handlers[type];
   
           if (!handler) {
@@ -58,12 +67,6 @@ export const useChatStore = defineStore('chatStore', () => {
       //   }
       //   messages.value[message.roomId].push(message);
       // });
-
-      // socket.value.on('chat_history', (history) => {
-      //   if (currentChat.value) {
-      //     messages.value[currentChat.value] = history;
-      //   }
-      // });
     }
   };
 
@@ -77,7 +80,7 @@ export const useChatStore = defineStore('chatStore', () => {
   const joinChat = (chatId) => {
     if (socket.value) {
       currentChat.value = chatId;
-      socket.value.emit(messages.out.CHAT_JOIN, chatId);
+      socket.value.emit('message', { type: socketMessageTypes.out.CHAT_JOIN, data: { chatId } });
     }
   };
 

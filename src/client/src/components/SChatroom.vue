@@ -1,6 +1,6 @@
 <template>
   <div class="chatroom d-flex flex-column h-100">
-    <div v-if="!currentChat" class="d-flex justify-content-center align-items-center flex-grow-1">
+    <div v-if="!chatId" class="d-flex justify-content-center align-items-center flex-grow-1">
       <p class="text-muted">You’re currently not in any chatroom.<br/> Select or create one to start chatting.</p>
     </div>
     <template v-else>
@@ -43,12 +43,6 @@ export default {
     const chatId = computed(() => route.params.id);
     const chatMessages = computed(() => chatStore.messages[chatId] || []);
 
-    watch(chatId, (id) => {
-      if (id) {
-        chatStore.joinChat(id);
-      }
-    });
-
     const sendMessage = () => {
       if (newMessage.value.trim()) {
         chatStore.sendMessage(chatId, newMessage.value);
@@ -57,7 +51,7 @@ export default {
     };
 
     return {
-      currentChat: chatId.value,
+      chatId,
       chatMessages,
       newMessage,
       sendMessage,

@@ -6,22 +6,28 @@ const handleCreateChat = async (_io, socket, data) => {
     // todo: validate input
     const chatId = await chatService.create(data.name, data.createdBy);
     socket.emit('message', { type: messages.out.CHAT_CREATE_ACK, data: { id: chatId } });
+    console.log(`Chat created: ${chatId}`);
   } catch (err) {
     // todo: handle error
   }
 }
 
-const handleJoinRoom = async (socket, roomId) => {
-  socket.join(roomId);
-
-  // todo: use logger
-  console.log(`User ${socket.id} joined room ${roomId}`);
-
+const handleJoinRoom = async (_io, socket, data) => {
   try {
-    const history = await chatService.getHistory(roomId);
+    // todo: validate input
+    var chat = await chatService.get(data.chatId);
+    if (!chat) {
+      // todo: emit error
+      // todo: use logger
+      console.error(`Chat not found: ${data.chatId}`);
+      return;
+    }
 
-    // todo: create payload strategy
-    socket.emit('chat_history', history);
+    socket.join(chat.id);
+    const history = await chatService.getHistory(chat.id);
+    socket.emit('message', { type: messages.out.CHAT_JOIN_SUCCESS, data: { id: chat.id, name: chat.name, history } });
+    // todo: use logger
+    console.log(`User ${socket.id} joined room ${data.chatId}`);
   } catch (err) {
     // todo: use logger
     // todo: emit error to client (and use payload strategy)

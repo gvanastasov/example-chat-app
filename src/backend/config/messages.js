@@ -6,6 +6,6 @@ module.exports = {
     },
     out: {
         CHAT_CREATE_ACK: 'chat:create:ack',
+        CHAT_JOIN_SUCCESS: 'chat:join:success',
     }
   };
-  
