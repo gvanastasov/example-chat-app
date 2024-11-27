@@ -32,7 +32,7 @@ const initSocket = (server) => {
     console.log(`User connected: ${socket.id}`);
     
     let inactivityTimer = getInactivityTimer(socket);
-    socket.onAny(() => resetInactivityTimer(inactivityTimer));
+    socket.onAny(() => resetInactivityTimer(socket, inactivityTimer));
 
     socket.on('message', (msg) => {
       try {
