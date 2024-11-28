@@ -7,12 +7,13 @@ import { router } from '../router';
 
 const socketMessageTypes = {
   out: {
-      CHAT_CREATE: 'chat:create',
-      CHAT_JOIN: 'chat:join',
+    CHAT_CREATE: 'chat:create',
+    CHAT_JOIN: 'chat:join',
   },
   in: {
-      CHAT_CREATE_ACK: 'chat:create:ack',
-      CHAT_JOIN_SUCCESS: 'chat:join:success',
+    CONNECT_SUCCESS: 'connect:success',
+    CHAT_CREATE_ACK: 'chat:create:ack',
+    CHAT_JOIN_SUCCESS: 'chat:join:success',
   }
 };
 
@@ -27,21 +28,12 @@ export const useChatStore = defineStore('chatStore', () => {
   const user = computed(() => userStore.user);
 
   const handlers = {
+    [socketMessageTypes.in.CONNECT_SUCCESS]: (_io, _socket, data) => {
+      chats.value = data.chats;
+    },
     [socketMessageTypes.in.CHAT_CREATE_ACK]: (_io, _socket, data) => {
       joinChat(data.id);
     },
-    [socketMessageTypes.in.CHAT_JOIN_SUCCESS]: (_io, _socket, { id, name, history }) => {
-      messages.value[currentChat.value] = history;
-      currentChat.value = id;
-
-      if (!chats.value.find((chat) => chat.id === id)) {
-        chats.value.push({ id, name });
-      }
-
-      if (router.currentRoute.value.name !== 'Chatroom' || router.currentRoute.value.params.id !== id) {
-        router.push({ name: 'Chatroom', params: { id } });
-      }
-    }
   }
 
   const connectSocket = () => {
@@ -85,8 +77,22 @@ export const useChatStore = defineStore('chatStore', () => {
 
   const joinChat = (chatId) => {
     if (socket.value) {
-      currentChat.value = chatId;
-      socket.value.emit('message', { type: socketMessageTypes.out.CHAT_JOIN, data: { chatId } });
+      socket.value.emit('message', { type: socketMessageTypes.out.CHAT_JOIN, data: { chatId } }, (ack) => {
+        if (ack.success) {
+          const id = ack.chat.id;
+          const existing = chats.value.find((chat) => chat.id === id);
+          if (!existing) {
+            chats.value.push({ id, name: ack.chat.name });
+          }
+          messages.value[id] = ack.chat.history;
+          currentChat.value = id;
+
+          if (router.currentRoute.value.name !== 'Chatroom' || 
+              router.currentRoute.value.params.id !== id) {
+            router.push({ name: 'Chatroom', params: { id } });
+          }
+        }
+      });
     }
   };
 
@@ -98,7 +104,15 @@ export const useChatStore = defineStore('chatStore', () => {
 
   const createChat = (name) => {
     if (socket.value && user.value) {
-      socket.value.emit('message', { type: socketMessageTypes.out.CHAT_CREATE, data: { name, createdBy: user.value.name } });
+      socket.value.emit('message', { type: socketMessageTypes.out.CHAT_CREATE, data: { name, createdBy: user.value.name } }, (ack) => {
+        if (ack.success) {
+          joinChat(ack.id);
+          console.log('Chat created:', ack.id);
+        } else {
+          // todo: handle error
+          console.error('Failed to create chat:', ack.error);
+        }
+      });
     }
   };
 

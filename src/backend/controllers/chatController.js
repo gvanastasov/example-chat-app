@@ -1,36 +1,56 @@
 const chatService = require('../services/chatService');
 const messages = require('../config/messages');
 
-const handleCreateChat = async (_io, socket, data) => {
+const handleConnected = async (socket) => {
+  try {
+    var chats = await chatService.getAll();
+    console.log(chats);
+    socket.emit('message', { type: messages.out.CONNECT_SUCCESS, data: { chats } });
+
+    // todo: use logger
+    console.log(`User connected: ${socket.id}`);
+  } catch (err) {
+    // todo: handle error
+    console.error(err);
+  }
+};
+
+const handleCreateChat = async ({ data, callback }) => {
   try {
     // todo: validate input
     const chatId = await chatService.create(data.name, data.createdBy);
-    socket.emit('message', { type: messages.out.CHAT_CREATE_ACK, data: { id: chatId } });
+    callback({ success: true, id: chatId });
+    // todo: use logger
     console.log(`Chat created: ${chatId}`);
   } catch (err) {
-    // todo: handle error
+    // todo: align error messages
+    callback({ success: false, error: err.message });
+    // todo: use logger
+    console.error(err);
   }
 }
 
-const handleJoinRoom = async (_io, socket, data) => {
+const handleJoinRoom = async ({ socket, data, callback }) => {
   try {
     // todo: validate input
     var chat = await chatService.get(data.chatId);
     if (!chat) {
-      // todo: emit error
       // todo: use logger
+      // todo: align error messages
+      callback({ success: false, error: 'Chat not found' });
       console.error(`Chat not found: ${data.chatId}`);
       return;
     }
 
     socket.join(chat.id);
     const history = await chatService.getHistory(chat.id);
-    socket.emit('message', { type: messages.out.CHAT_JOIN_SUCCESS, data: { id: chat.id, name: chat.name, history } });
+    callback({ success: true, chat: { ...chat, history } });
     // todo: use logger
     console.log(`User ${socket.id} joined room ${data.chatId}`);
   } catch (err) {
+    // todo: align error messages
+    callback({ success: false, error: err.message });
     // todo: use logger
-    // todo: emit error to client (and use payload strategy)
     console.error(err);
   }
 }
@@ -49,7 +69,8 @@ const handleChatMessage = async (io, roomId, user, text) => {
 }
 
 module.exports = {
-  handleCreateRoom: handleCreateChat,
+  handleConnected,
+  handleCreateChat,
   handleJoinRoom,
   handleChatMessage,
 };

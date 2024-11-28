@@ -3,7 +3,7 @@ const chatController = require('../controllers/chatController');
 const messages = require('./messages');
 
 const handlers = {
-  [messages.in.CHAT_CREATE]: chatController.handleCreateRoom,
+  [messages.in.CHAT_CREATE]: chatController.handleCreateChat,
   [messages.in.CHAT_JOIN]: chatController.handleJoinRoom,
   [messages.in.CHAT_MESSAGE]: chatController.handleChatMessage,
 };
@@ -28,24 +28,27 @@ const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    // todo: use logger
-    console.log(`User connected: ${socket.id}`);
-    
+    chatController.handleConnected(socket);
+
+    // todo: move out of here
     let inactivityTimer = getInactivityTimer(socket);
     socket.onAny(() => resetInactivityTimer(socket, inactivityTimer));
 
-    socket.on('message', (msg) => {
+    socket.on('message', async ({ type, data }, callback) => {
       try {
-        const { type, data } = msg;
         const handler = handlers[type];
 
         if (!handler) {
+          // todo: use logger
           console.error(`Unknown message type: ${type}`);
           return;
         }
 
-        handler(io, socket, data);
+        const context = { io, socket, data, callback };
+
+        await handler(context);
       } catch (err) {
+        // todo: use logger
         console.error('Failed to process message:', err);
       }
     });

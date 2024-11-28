@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 
 import { useChatStore } from '../../stores/chatStore';
 
@@ -40,7 +40,8 @@ export default {
   components: { CPage },
   setup() {
     const chatStore = useChatStore();
-    
+    const chats = computed(() => chatStore.chats);
+
     const createChat = () => {
       // todo: use popup from bootstrap-vue
       const name = prompt('Enter chat name:');
@@ -50,7 +51,6 @@ export default {
     };
 
     const selectChat = (id) => {
-      router.push(`/chat/${id}`);
       chatStore.joinChat(id);
     };
 
@@ -63,7 +63,7 @@ export default {
     });
 
     return {
-      chats: chatStore.chats,
+      chats,
       createChat,
       selectChat,
     };

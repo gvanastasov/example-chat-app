@@ -33,6 +33,21 @@ const get = (chatId) => {
   });
 };
 
+const getAll = () => {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT * FROM chats`,
+      (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      }
+    );
+  }); 
+};
+
 const getHistory = (roomId) => {
   return new Promise((resolve, reject) => {
     db.all(
@@ -73,6 +88,7 @@ const saveMessage = (roomId, user, text) => {
 
 module.exports = {
   get,
+  getAll,
   create,
   getHistory,
   saveMessage,

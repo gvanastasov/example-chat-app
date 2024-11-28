@@ -5,6 +5,7 @@ module.exports = {
         CHAT_MESSAGE: 'chat:message',
     },
     out: {
+        CONNECT_SUCCESS: 'connect:success',
         CHAT_CREATE_ACK: 'chat:create:ack',
         CHAT_JOIN_SUCCESS: 'chat:join:success',
     }
