@@ -12,7 +12,7 @@ const socketMessageTypes = {
   },
   in: {
     CONNECT_SUCCESS: 'connect:success',
-    CHAT_CREATE_ACK: 'chat:create:ack',
+    CHAT_CREATED: 'chat:created',
     CHAT_JOIN_SUCCESS: 'chat:join:success',
   }
 };
@@ -30,6 +30,12 @@ export const useChatStore = defineStore('chatStore', () => {
   const handlers = {
     [socketMessageTypes.in.CONNECT_SUCCESS]: (_io, _socket, data) => {
       chats.value = data.chats;
+    },
+    [socketMessageTypes.in.CHAT_CREATED]: (_io, _socket, data) => {
+      const existing = chats.value.find((chat) => chat.id === data.id);
+      if (!existing) {
+        chats.value.push({ id: data.id, name: data.name });
+      }
     },
     [socketMessageTypes.in.CHAT_CREATE_ACK]: (_io, _socket, data) => {
       joinChat(data.id);

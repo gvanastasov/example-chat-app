@@ -15,11 +15,12 @@ const handleConnected = async (socket) => {
   }
 };
 
-const handleCreateChat = async ({ data, callback }) => {
+const handleCreateChat = async ({ socket, data, callback }) => {
   try {
     // todo: validate input
     const chatId = await chatService.create(data.name, data.createdBy);
     callback({ success: true, id: chatId });
+    socket.broadcast.emit('message', { type: messages.out.CHAT_CREATED, data: { id: chatId, name: data.name } });
     // todo: use logger
     console.log(`Chat created: ${chatId}`);
   } catch (err) {
