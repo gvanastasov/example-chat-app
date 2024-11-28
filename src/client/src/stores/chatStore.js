@@ -13,7 +13,6 @@ const socketMessageTypes = {
   in: {
     CONNECT_SUCCESS: 'connect:success',
     CHAT_CREATED: 'chat:created',
-    CHAT_JOIN_SUCCESS: 'chat:join:success',
   }
 };
 
@@ -36,9 +35,6 @@ export const useChatStore = defineStore('chatStore', () => {
       if (!existing) {
         chats.value.push({ id: data.id, name: data.name });
       }
-    },
-    [socketMessageTypes.in.CHAT_CREATE_ACK]: (_io, _socket, data) => {
-      joinChat(data.id);
     },
   }
 
