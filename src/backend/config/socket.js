@@ -5,7 +5,7 @@ const messages = require('./messages');
 const handlers = {
   [messages.in.CHAT_CREATE]: chatController.handleCreateChat,
   [messages.in.CHAT_JOIN]: chatController.handleJoinRoom,
-  [messages.in.CHAT_MESSAGE]: chatController.handleChatMessage,
+  [messages.in.CHAT_MESSAGE_SEND]: chatController.handleChatMessage,
 };
 
 // todo: move out of here
@@ -31,8 +31,8 @@ const initSocket = (server) => {
     chatController.handleConnected(socket);
 
     // todo: move out of here
-    let inactivityTimer = getInactivityTimer(socket);
-    socket.onAny(() => resetInactivityTimer(socket, inactivityTimer));
+    // let inactivityTimer = getInactivityTimer(socket);
+    // socket.onAny(() => resetInactivityTimer(socket, inactivityTimer));
 
     socket.on('message', async ({ type, data }, callback) => {
       try {

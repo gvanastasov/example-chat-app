@@ -41,11 +41,11 @@ export default {
     const newMessage = ref('');
 
     const chatId = computed(() => route.params.id);
-    const chatMessages = computed(() => chatStore.messages[chatId] || []);
+    const chatMessages = computed(() => chatStore.messages[chatId.value] || []);
 
     const sendMessage = () => {
       if (newMessage.value.trim()) {
-        chatStore.sendMessage(chatId, newMessage.value);
+        chatStore.sendMessage(chatId.value, newMessage.value);
         newMessage.value = '';
       }
     };

@@ -9,10 +9,12 @@ const socketMessageTypes = {
   out: {
     CHAT_CREATE: 'chat:create',
     CHAT_JOIN: 'chat:join',
+    CHAT_MESSAGE_SEND: 'chat:message:send',
   },
   in: {
     CONNECT_SUCCESS: 'connect:success',
     CHAT_CREATED: 'chat:created',
+    CHAT_MESSAGE_RECEIVED: 'chat:message:received',
   }
 };
 
@@ -36,6 +38,12 @@ export const useChatStore = defineStore('chatStore', () => {
         chats.value.push({ id: data.id, name: data.name });
       }
     },
+    [socketMessageTypes.in.CHAT_MESSAGE_RECEIVED]: (_io, _socket, data) => {
+      if (!messages.value[data.chatId]) {
+        messages.value[data.chatId] = [];
+      }
+      messages.value[data.chatId].push(data);
+    },
   }
 
   const connectSocket = () => {
@@ -46,6 +54,7 @@ export const useChatStore = defineStore('chatStore', () => {
       });
 
       socket.value.on('message', (msg) => {
+        console.log('Received message', msg);
         try {
           const { type, data } = msg;
           const handler = handlers[type];
@@ -60,13 +69,6 @@ export const useChatStore = defineStore('chatStore', () => {
           console.error('Failed to process message:', err);
         }
       });
-
-      // socket.value.on('chat_message', (message) => {
-      //   if (!messages.value[message.roomId]) {
-      //     messages.value[message.roomId] = [];
-      //   }
-      //   messages.value[message.roomId].push(message);
-      // });
     }
   };
 
@@ -100,7 +102,16 @@ export const useChatStore = defineStore('chatStore', () => {
 
   const sendMessage = (chatId, text) => {
     if (socket.value && user.value) {
-      socket.value.emit('send_message', { roomId: chatId, user: user.value.name, text });
+      socket.value.emit('message', { type: socketMessageTypes.out.CHAT_MESSAGE_SEND, data: { chatId, user: user.value.name, text } }, (ack) => {
+        if (ack.success) {
+          if (!messages.value[ack.message.chatId]) {
+            messages.value[ack.message.chatId] = [];
+          }
+          messages.value[ack.message.chatId].push({ user: ack.message.user, text: ack.message.text });
+        } else {
+          // todo: handle error sending message
+        }
+      });
     }
   };
 

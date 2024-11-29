@@ -22,7 +22,7 @@ const handleCreateChat = async ({ socket, data, callback }) => {
     callback({ success: true, id: chatId });
     socket.broadcast.emit('message', { type: messages.out.CHAT_CREATED, data: { id: chatId, name: data.name } });
     // todo: use logger
-    console.log(`Chat created: ${chatId}`);
+    console.log(`Chat created: ${data.name}`);
   } catch (err) {
     // todo: align error messages
     callback({ success: false, error: err.message });
@@ -42,12 +42,11 @@ const handleJoinRoom = async ({ socket, data, callback }) => {
       console.error(`Chat not found: ${data.chatId}`);
       return;
     }
-
-    socket.join(chat.id);
+    socket.join(chat.id.toString());
     const history = await chatService.getHistory(chat.id);
     callback({ success: true, chat: { ...chat, history } });
     // todo: use logger
-    console.log(`User ${socket.id} joined room ${data.chatId}`);
+    console.log(`User ${socket.id} joined room ${chat.id}`);
   } catch (err) {
     // todo: align error messages
     callback({ success: false, error: err.message });
@@ -56,12 +55,15 @@ const handleJoinRoom = async ({ socket, data, callback }) => {
   }
 }
 
-const handleChatMessage = async (io, roomId, user, text) => {
+const handleChatMessage = async ({ socket, data, callback }) => {
   try {
-    const message = await chatService.saveMessage(roomId, user, text);
+    const { chatId, user, text } = data;
+    const message = await chatService.saveMessage(chatId, user, text);
 
-    // todo: create payload strategy
-    io.to(roomId).emit('chat_message', message);
+    callback({ success: true, message: { chatId, ...message } });
+    socket.broadcast.to(chatId.toString()).emit('message', { type: messages.out.CHAT_MESSAGE_RECEIVED, data: { chatId, user, text } });
+    // todo: use logger
+    console.log(`Message saved: ${user}: ${text}`);
   } catch (err) {
     // todo: use logger
     // todo: emit error to client (and use payload strategy)
