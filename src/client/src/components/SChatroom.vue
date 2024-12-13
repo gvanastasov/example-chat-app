@@ -10,6 +10,7 @@
           v-for="(message, index) in chatMessages"
           :key="index"
           class="message mb-2"
+          :class="{ 'text-end': message.user === username }"
         >
           <strong>{{ message.user }}:</strong> {{ message.text }}
         </div>
@@ -31,12 +32,16 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useUserStore } from '../stores/user';
 import { useChatStore } from '../stores/chatStore';
 
 export default {
   setup() {
     const route = useRoute();
+    const userStore = useUserStore();
     const chatStore = useChatStore();
+
+    const username = computed(() => userStore.user.name);
 
     const newMessage = ref('');
 
@@ -51,6 +56,7 @@ export default {
     };
 
     return {
+      username,
       chatId,
       chatMessages,
       newMessage,
