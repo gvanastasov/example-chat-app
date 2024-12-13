@@ -19,13 +19,13 @@
       </div>
   
       <!-- Message Input -->
-      <form @submit.prevent="sendMessage" class="d-flex p-3 border-top">
-        <b-form-input
-          v-model="newMessage"
-          placeholder="Type your message..."
-          class="flex-grow-1 me-2"
-        />
-        <b-button type="submit" variant="primary">Send</b-button>
+      <form @submit.prevent="sendMessage" class="d-flex pt-2 border-top">
+        <b-input-group :prepend="username">
+          <b-form-input v-model="newMessage" placeholder="Message..."></b-form-input>
+          <b-input-group-append>
+            <b-button variant="danger" type="submit">Send</b-button>
+          </b-input-group-append>
+        </b-input-group>
       </form>
     </template>
   </div>
