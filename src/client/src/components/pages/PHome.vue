@@ -6,19 +6,25 @@
         <h3>ChatApp</h3>
       </div>
       <div class="chat-list px-3">
-        <b-button variant="outline-danger" class="w-100 mb-2" @click="createChat">
+        <b-button variant="danger" class="w-100 mb-2" @click="createChat">
             Create Chat
         </b-button>
+        <div v-if="chats && chats.length" class="my-3 text-muted small text-center">...or join one</div>
         <b-list-group>
-          <li
+          <b-list-group-item
             v-for="chat in chats"
             :key="chat.id"
-            class="list-group-item"
+            class="list-group-item-action"
             @click="selectChat(chat.id)"
           >
             {{ chat.name }}
-          </li>
+          </b-list-group-item>
         </b-list-group>
+      </div>
+      <div class="p-3 mt-auto">
+        <b-button variant="outline-danger" class="w-100" @click="logout">
+          Logout
+        </b-button>
       </div>
     </aside>
 
