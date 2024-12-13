@@ -3,15 +3,11 @@
       <div class="card p-4 w-50">
         <h3 class="text-center mb-4">Welcome to ChatApp</h3>
         <form @submit.prevent="handleLogin">
-          <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <b-form-input
-              id="username"
-              v-model="username"
-              placeholder="Enter your username"
-            />
-          </div>
-          <b-button type="submit" variant="primary" class="w-100">
+
+          <b-input-group prepend="Username" class="mb-3">
+            <b-form-input v-model="username" id="username"></b-form-input>
+          </b-input-group>
+          <b-button type="submit" variant="danger" class="w-100">
             Login
           </b-button>
         </form>
