@@ -107,7 +107,7 @@ export const useChatStore = defineStore('chatStore', () => {
           if (!messages.value[ack.message.chatId]) {
             messages.value[ack.message.chatId] = [];
           }
-          messages.value[ack.message.chatId].push({ user: ack.message.user, text: ack.message.text });
+          messages.value[ack.message.chatId].push({ user: ack.message.user, text: ack.message.text, timestamp: ack.message.timestamp });
         } else {
           // todo: handle error sending message
         }
