@@ -12,7 +12,7 @@
           class="message mb-2"
           :class="{ 'text-end': message.user === username }"
         >
-          <strong>{{ message.user }}</strong><span class="ml-2">{{ formatTimestamp(message.timestamp) }}</span>
+          <strong>{{ message.user }}</strong><span class="text-muted small ms-2">{{ formatTimestamp(message.timestamp) }}</span>
           <br/>
           {{ message.text }}
         </div>
