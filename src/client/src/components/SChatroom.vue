@@ -12,7 +12,9 @@
           class="message mb-2"
           :class="{ 'text-end': message.user === username }"
         >
-          <strong>{{ message.user }}:</strong> {{ message.text }}
+          <strong>{{ message.user }}</strong><span class="ml-2">{{ formatTimestamp(message.timestamp) }}</span>
+          <br/>
+          {{ message.text }}
         </div>
       </div>
   
@@ -30,10 +32,11 @@
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import { useChatStore } from '../stores/chatStore';
+import { formatDistanceToNow } from 'date-fns';
 
 export default {
   setup() {
@@ -46,7 +49,11 @@ export default {
     const newMessage = ref('');
 
     const chatId = computed(() => route.params.id);
-    const chatMessages = computed(() => chatStore.messages[chatId.value] || []);
+    const chatMessages = computed(() => (chatStore.messages[chatId.value] || []).map(x => ({
+      user: x.user,
+      timestamp: x.timestamp,
+      text: x.text,
+    })));
 
     const sendMessage = () => {
       if (newMessage.value.trim()) {
@@ -55,12 +62,28 @@ export default {
       }
     };
 
+    const formatTimestamp = (timestamp) => {
+      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    };
+
+    let intervalId;
+    onMounted(() => {
+      intervalId = setInterval(() => {
+        chatMessages.value = [...chatMessages.value];
+      }, 60000);
+    });
+
+    onUnmounted(() => {
+      clearInterval(intervalId);
+    });
+
     return {
       username,
       chatId,
       chatMessages,
       newMessage,
       sendMessage,
+      formatTimestamp,
     };
   },
 };
