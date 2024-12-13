@@ -37,7 +37,9 @@
 
 <script>
 import { computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+import { useUserStore } from '../../stores/user';
 import { useChatStore } from '../../stores/chatStore';
 
 import CPage from '../CPage.vue';
@@ -45,6 +47,8 @@ import CPage from '../CPage.vue';
 export default {
   components: { CPage },
   setup() {
+    const router = useRouter();
+    const userStore = useUserStore();
     const chatStore = useChatStore();
     const chats = computed(() => chatStore.chats);
 
@@ -60,6 +64,11 @@ export default {
       chatStore.joinChat(id);
     };
 
+    const logout = () => {
+      userStore.logout();
+      router.push({ name: 'Login' });
+    };
+
     onMounted(() => {
       chatStore.connectSocket();
     });
@@ -69,6 +78,7 @@ export default {
     });
 
     return {
+      logout,
       chats,
       createChat,
       selectChat,
