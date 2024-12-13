@@ -1,17 +1,15 @@
 const chatService = require('../services/chatService');
 const messages = require('../config/messages');
+const logger = require('../utils/logger');
 
 const handleConnected = async (socket) => {
   try {
     var chats = await chatService.getAll();
-    console.log(chats);
     socket.emit('message', { type: messages.out.CONNECT_SUCCESS, data: { chats } });
 
-    // todo: use logger
-    console.log(`User connected: ${socket.id}`);
+    logger.info(`User connected: ${socket.id}`);
   } catch (err) {
-    // todo: handle error
-    console.error(err);
+    logger.error(`Failed to get chats for user ${socket.id}. Error: ${err.message}`);
   }
 };
 
@@ -19,15 +17,16 @@ const handleCreateChat = async ({ socket, data, callback }) => {
   try {
     // todo: validate input
     const chatId = await chatService.create(data.name, data.createdBy);
+
     callback({ success: true, id: chatId });
+
     socket.broadcast.emit('message', { type: messages.out.CHAT_CREATED, data: { id: chatId, name: data.name } });
-    // todo: use logger
-    console.log(`Chat created: ${data.name}`);
+
+    logger.info(`Chat created: ${data.name}`);
   } catch (err) {
     // todo: align error messages
     callback({ success: false, error: err.message });
-    // todo: use logger
-    console.error(err);
+    logger.error(err);
   }
 }
 
@@ -61,7 +60,11 @@ const handleChatMessage = async ({ socket, data, callback }) => {
     const message = await chatService.saveMessage(chatId, user, text);
 
     callback({ success: true, message: { chatId, ...message } });
-    socket.broadcast.to(chatId.toString()).emit('message', { type: messages.out.CHAT_MESSAGE_RECEIVED, data: { chatId, user, text } });
+    
+    socket.broadcast
+      .to(chatId.toString())
+      .emit('message', { type: messages.out.CHAT_MESSAGE_RECEIVED, data: { chatId, ...message } });
+
     // todo: use logger
     console.log(`Message saved: ${user}: ${text}`);
   } catch (err) {
