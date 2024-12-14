@@ -6,7 +6,7 @@
         <h3>ChatApp</h3>
       </div>
       <div class="chat-list px-3">
-        <b-button variant="danger" class="w-100 mb-2" @click="createChat">
+        <b-button variant="danger" class="w-100 mb-2" @click="showCreateChatModal">
             Create Chat
         </b-button>
         <div v-if="chats && chats.length && currentChatId == null" class="my-3 text-muted small text-center">...or join one</div>
@@ -34,11 +34,32 @@
     <c-page>
       <router-view />
     </c-page>
+
+    <b-modal 
+      id="create-chat-modal" 
+      v-model="isCreateChatModalVisible" 
+      title="Create Chat" 
+      ok-variant='danger' 
+      ok-title="Create" 
+      @ok="createChat" 
+      cancel-title="Cancel" 
+      @cancel="isCreateChatModalVisible = false"
+    >
+      <b-form @submit.prevent="createChat">
+        <b-form-group label-for="chat-name-input">
+          <b-form-input
+            id="chat-name-input"
+            v-model="newChatName"
+            required
+          ></b-form-input>
+        </b-form-group>
+      </b-form>
+    </b-modal>
   </div>
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useUserStore } from '../../stores/user';
@@ -57,11 +78,18 @@ export default {
     const chats = computed(() => chatStore.chats);
     const currentChatId = computed(() => chatStore.currentChat);
 
+    const isCreateChatModalVisible = ref(false);
+    const newChatName = ref('');
+
+    const showCreateChatModal = () => {
+      isCreateChatModalVisible.value = true;
+    };
+
     const createChat = () => {
-      // todo: use popup from bootstrap-vue
-      const name = prompt('Enter chat name:');
-      if (name) {
-        chatStore.createChat(name);
+      if (newChatName.value.trim()) {
+        chatStore.createChat(newChatName.value);
+        newChatName.value = '';
+        isCreateChatModalVisible.value = false;
       }
     };
 
@@ -87,6 +115,9 @@ export default {
       currentChatId,
       logout,
       chats,
+      showCreateChatModal,
+      isCreateChatModalVisible,
+      newChatName,
       createChat,
       selectChat,
     };
