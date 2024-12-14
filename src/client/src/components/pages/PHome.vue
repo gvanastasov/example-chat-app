@@ -9,12 +9,13 @@
         <b-button variant="danger" class="w-100 mb-2" @click="createChat">
             Create Chat
         </b-button>
-        <div v-if="chats && chats.length" class="my-3 text-muted small text-center">...or join one</div>
+        <div v-if="chats && chats.length && currentChatId == null" class="my-3 text-muted small text-center">...or join one</div>
         <b-list-group>
           <b-list-group-item
             v-for="chat in chats"
             :key="chat.id"
             class="list-group-item-action"
+            :class="{ active: currentChatId && currentChatId === chat.id }"
             @click="selectChat(chat.id)"
           >
             {{ chat.name }}
@@ -54,6 +55,7 @@ export default {
 
     const username = computed(() => userStore.user.name);
     const chats = computed(() => chatStore.chats);
+    const currentChatId = computed(() => chatStore.currentChat);
 
     const createChat = () => {
       // todo: use popup from bootstrap-vue
@@ -82,6 +84,7 @@ export default {
 
     return {
       username,
+      currentChatId,
       logout,
       chats,
       createChat,
