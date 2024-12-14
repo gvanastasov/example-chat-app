@@ -15,7 +15,7 @@
             v-for="chat in chats"
             :key="chat.id"
             class="list-group-item-action"
-            :class="{ active: currentChatId && currentChatId === chat.id }"
+            :class="{ 'active-chat': currentChatId && currentChatId === chat.id }"
             @click="selectChat(chat.id)"
           >
             {{ chat.name }}
@@ -103,5 +103,19 @@ export default {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+}
+.active-chat {
+  position: relative;
+}
+.active-chat::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #dc3545;
+  border-radius: 50%;
 }
 </style>
