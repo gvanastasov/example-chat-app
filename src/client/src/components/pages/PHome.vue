@@ -22,6 +22,7 @@
         </b-list-group>
       </div>
       <div class="p-3 mt-auto">
+        <div class="my-3 text-muted small text-center">{{ username }}</div>
         <b-button variant="outline-danger" class="w-100" @click="logout">
           Logout
         </b-button>
@@ -50,6 +51,8 @@ export default {
     const router = useRouter();
     const userStore = useUserStore();
     const chatStore = useChatStore();
+
+    const username = computed(() => userStore.user.name);
     const chats = computed(() => chatStore.chats);
 
     const createChat = () => {
@@ -78,6 +81,7 @@ export default {
     });
 
     return {
+      username,
       logout,
       chats,
       createChat,
