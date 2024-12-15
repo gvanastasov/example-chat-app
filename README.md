@@ -1,8 +1,8 @@
-# **Example Chat App**
+# **Example Websocket App**
 
 ## **Description**
 
-The Example Chat App is a real-time chat application built with websockets. It allows users to create chat rooms, join existing rooms, and send messages in real-time. This project demonstrates the use of modern web technologies to build a responsive and interactive chat application. To mitigate the boilerplate code for websockets, Socket.IO is used. The application uses a WebSocket-only architecture for real-time communication. However, in a production environment, a hybrid networking solution (WebSocket + HTTP) is often more robust and scalable.
+This repository demos one of the many applications of websockets, one such being a real-time chat. It allows users to create chat rooms, join existing rooms, and send messages in real-time. This project demonstrates the use of modern web technologies to build a responsive and interactive chat application. To mitigate the boilerplate code for websockets, Socket.IO is used. The application uses a WebSocket-only architecture for real-time communication. However, in a production environment, a hybrid networking solution (WebSocket + HTTP) is often more robust and scalable.
 
 ## **Features**
 
