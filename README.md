@@ -84,6 +84,9 @@ npm run dev
 
 ## **Acknowledgements**
 Vue.js
+
 BootstrapVue
+
 Socket.IO
+
 Vite
