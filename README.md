@@ -81,6 +81,10 @@ npm run dev
 - Error Handling: Improve error handling on both the server and client sides.
 - Model Validation: Introduce robust model validation to ensure data integrity.
 - Hybrid Networking Solution: Implement a hybrid networking solution (WebSocket + HTTP) for better scalability and reliability.
+- Implement disconnect logic
+- Implement inactive logic
+- Implement ACL for chats and users
+- Implement invitation functionality
 
 ## **Acknowledgements**
 Vue.js
